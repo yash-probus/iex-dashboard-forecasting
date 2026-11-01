@@ -1,0 +1,348 @@
+@import "tailwindcss";
+@import "./components/forecast/forecast.css";
+@import "./components/recommendation/recommendation.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Premium Light Mode Colors - Matched to Prolt theme */
+  --color-background: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #001356;
+  --color-text-secondary: #566578;
+  --color-border: #C6D4E3;
+  --color-primary: #7C3AED;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #E2E8F0;
+  --color-secondary-foreground: #0F172A;
+  --color-foreground: #0F172A;
+
+  --color-primary-accent: #2E51FF;
+  --color-market-dam: #2E51FF;
+  --color-market-gdam: #14B8A6;
+  --color-market-rtm: #F59E0B;
+
+  /* Forecast & Recommendation Design Tokens */
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
+  --color-brand-hover: var(--brand-hover);
+  --color-forecast: var(--forecast);
+  --color-actual: var(--actual);
+  --color-dam: var(--dam);
+  --color-gdam: var(--gdam);
+  --color-rtm: var(--rtm);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
+  --color-teal: var(--teal);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-line: var(--primary-line);
+  --color-tint-violet: var(--forecast);
+  --color-tint-teal: var(--gdam);
+  --color-tint-rose: var(--negative);
+  --color-tint-blue: var(--dam);
+  --color-tint-amber: var(--rtm);
+  --color-surface-2: var(--surface-2);
+  --color-glass: var(--glass);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  /* Block Error Tolerance tokens */
+  --color-cleared: var(--cleared);
+  --color-cleared-soft: var(--cleared-soft);
+  --color-miss: var(--miss);
+  --color-miss-strong: var(--miss-strong);
+  --color-balanced: var(--balanced);
+  --color-balanced-soft: var(--balanced-soft);
+  --color-aggressive: var(--aggressive);
+  --color-aggressive-soft: var(--aggressive-soft);
+  --color-track: var(--track);
+}
+
+:root, html.light {
+  --color-background: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #001356;
+  --color-text-secondary: #566578;
+  --color-border: #C6D4E3;
+  --color-hover: #E8F1F5;
+
+  --cleared: oklch(0.66 0.16 160);
+  --cleared-soft: oklch(0.94 0.05 160);
+  --teal: oklch(0.65 0.12 195);
+  --miss: oklch(0.86 0.012 240);
+  --miss-strong: oklch(0.64 0.17 15);
+  --balanced: oklch(0.6 0.13 75);
+  --balanced-soft: oklch(0.95 0.05 85);
+  --aggressive: oklch(0.58 0.19 25);
+  --aggressive-soft: oklch(0.95 0.035 25);
+  --track: oklch(0.93 0.01 190);
+  --gradient-accent: linear-gradient(90deg, var(--cleared), var(--teal));
+  --shadow-layer: 0 1px 0 oklch(1 0 0 / 0.8) inset, 0 12px 40px -18px oklch(0.3 0.05 190 / 0.25);
+}
+
+html.dark, .dark {
+  --color-background: #070A12;
+  --color-surface: #0E1422;
+  --color-text-primary: #F8FAFC;
+  --color-text-secondary: #94A3B8;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-hover: #131A2B;
+
+  --cleared: oklch(0.74 0.16 160);
+  --cleared-soft: oklch(0.32 0.06 160);
+  --teal: oklch(0.72 0.11 195);
+  --miss: oklch(0.32 0.015 230);
+  --miss-strong: oklch(0.66 0.17 15);
+  --balanced: oklch(0.8 0.13 80);
+  --balanced-soft: oklch(0.3 0.05 80);
+  --aggressive: oklch(0.7 0.17 25);
+  --aggressive-soft: oklch(0.3 0.06 25);
+  --track: oklch(0.28 0.015 210);
+  --shadow-layer: 0 1px 0 oklch(1 0 0 / 0.04) inset, 0 16px 48px -20px oklch(0 0 0 / 0.6);
+}
+
+.bg-accent-gradient {
+  background-image: var(--gradient-accent);
+}
+.shadow-layer {
+  box-shadow: var(--shadow-layer);
+}
+.hatch {
+  background-image: repeating-linear-gradient(135deg, transparent 0 2px, oklch(1 0 0 / 0.35) 2px 3px);
+}
+.stroke-track {
+  stroke: var(--track);
+}
+.stroke-cleared {
+  stroke: var(--cleared);
+}
+.border-cleared {
+  border-color: var(--cleared);
+}
+
+html {
+  /* Removed zoom: 0.75 which broke layout padding */
+  font-family: var(--font-sans);
+}
+html.login-page,
+body.login-page {
+  background-color: #070A12 !important;
+  background: #070A12 !important;
+  color: #F8FAFC !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+body.login-page #root {
+  background-color: #070A12 !important;
+  background: #070A12 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01';
+  letter-spacing: -0.011em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01';
+}
+
+.font-mono, .tabular-nums, table, [data-tabular] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* Base custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Global full-page vertical stretching for module dashboard cards & tables */
+#module-content-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-grow: 1 !important;
+}
+
+#module-content-wrapper > div {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-grow: 1 !important;
+  height: 100% !important;
+}
+
+/* Stretch Grid & Cards */
+#module-content-wrapper > div > .MuiGrid-container {
+  flex-grow: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#module-content-wrapper > div > .MuiGrid-container > .MuiGrid-item {
+  flex-grow: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#module-content-wrapper > div > .MuiGrid-container > .MuiGrid-item > .MuiCard-root,
+#module-content-wrapper > div > .MuiPaper-root {
+  flex-grow: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+#module-content-wrapper > div > .MuiGrid-container > .MuiGrid-item > .MuiCard-root > .MuiCardContent-root,
+#module-content-wrapper > div > .MuiPaper-root > .MuiCardContent-root {
+  flex-grow: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Auto-grow Table Containers */
+#module-content-wrapper > div > .MuiGrid-container > .MuiGrid-item > .MuiCard-root > .MuiCardContent-root > .MuiTableContainer-root,
+#module-content-wrapper > div > .MuiPaper-root > .MuiCardContent-root > .MuiTableContainer-root {
+  flex-grow: 1 !important;
+  min-height: 400px !important;
+}
+
+/* Print Styles */
+@media print {
+  @page {
+    margin: 0;
+  }
+  body {
+    padding: 1.5cm !important;
+    zoom: 0.55 !important;
+  }
+  .no-print, .no-print * {
+    display: none !important;
+  }
+  .MuiDrawer-root,
+  .MuiAppBar-root {
+    display: none !important;
+  }
+  body, html {
+    background-color: white !important;
+  }
+  main {
+    margin: 0 auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 383mm !important;
+  }
+  .MuiCard-root, .MuiPaper-root, .card, .grid-item, .recharts-responsive-container, [role="region"] {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    break-inside: avoid-page !important;
+  }
+  #module-content-wrapper > div {
+    min-height: auto !important;
+    height: auto !important;
+    max-width: 383mm !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* Redesigned PDF Report Print Styles */
+.redesigned-pdf-report {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+}
+.redesigned-pdf-report .pdf-page {
+  width: 210mm;
+  height: 297mm;
+  page-break-after: always;
+  break-after: page;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+@media print {
+  body.printing-report {
+    padding: 0 !important;
+    margin: 0 !important;
+    background-color: white !important;
+    zoom: 1 !important;
+  }
+  body.printing-report #root > * {
+    display: none !important;
+  }
+  body.printing-report #root > .print-container {
+    display: block !important;
+  }
+  body.printing-report .redesigned-pdf-report {
+    display: block !important;
+    width: 210mm;
+    margin: 0 !important;
+  }
+}

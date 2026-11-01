@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  iex-postgres:
+    image: postgres:${POSTGRES_VERSION:-17}
+    container_name: iex-postgres-${ENV_SUFFIX:-dev}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-Prolt_Operations}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-Prolt_Operations}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  iex-redis:
+    image: redis:7-alpine
+    container_name: iex-redis-${ENV_SUFFIX:-dev}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+  iex-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iex-backend-${ENV_SUFFIX:-dev}
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-5001}:${PORT:-5001}"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:' + (process.env.PORT || '5001') + '/health', (res) => { if (res.statusCode === 200) process.exit(0); else process.exit(1); }).on('error', () => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      iex-postgres:
+        condition: service_healthy
+      iex-redis:
+        condition: service_started
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Kolkata
+      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@iex-postgres:5432/${POSTGRES_DB:-Prolt_Operations}}
+      - REDIS_URL=redis://iex-redis:6379
+    volumes:
+      - ./uploads:/app/uploads
+
+volumes:
+  postgres_data:
+    name: ${POSTGRES_VOLUME:-postgres_data_${ENV_SUFFIX:-dev}}
+  postgres_backup_data:
+    name: ${POSTGRES_BACKUP_VOLUME:-postgres_backup_data_${ENV_SUFFIX:-dev}}
+  redis_data:
+    name: ${REDIS_VOLUME:-redis_data_${ENV_SUFFIX:-dev}}

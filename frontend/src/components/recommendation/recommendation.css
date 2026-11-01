@@ -1,0 +1,81 @@
+/* Market Recommendation / Landed Cost Calculator Design Tokens */
+:root {
+  --teal: #14B8A6;
+  --positive: #10B981;
+  --negative: #F43F5E;
+  --warning: #F59E0B;
+
+  --primary-soft: rgba(124, 58, 237, 0.1);
+  --primary-line: rgba(124, 58, 237, 0.2);
+  --primary-2: #6366F1;
+  --gradient-primary: linear-gradient(135deg, #7C3AED 0%, #6366F1 100%);
+
+  --chart-1: #64748B;
+  --chart-2: #7C3AED;
+  --chart-3: #10B981;
+  --chart-4: #F59E0B;
+  --chart-5: #14B8A6;
+
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.08);
+  --shadow-glow: 0 8px 24px -8px rgba(124, 58, 237, 0.45);
+}
+
+.dark, html.dark {
+  --primary-soft: rgba(124, 58, 237, 0.18);
+  --primary-line: rgba(124, 58, 237, 0.28);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+}
+
+.bg-gradient-primary {
+  background-image: var(--gradient-primary);
+}
+
+.shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+.label-caps {
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-foreground, #64748B);
+}
+
+.card-surface {
+  background: var(--card, #FFFFFF);
+  border: 1px solid var(--border, #E2E8F0);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-card);
+}
+
+.card-lift {
+  transition: transform 250ms ease-out, border-color 250ms ease-out, box-shadow 250ms ease-out;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-line, rgba(124, 58, 237, 0.2));
+}
+
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  box-shadow: 0 0 0 2px var(--background, #F8FAFC), 0 0 0 4px var(--primary, #7C3AED);
+}
+
+.fade-up {
+  animation: rec-fade-up 450ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes rec-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

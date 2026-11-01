@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Analysis Dashboard</title>
+    <meta name="description" content="AI-driven daily market predictions for DAM, RTM, and GDAM.">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='By Probus_Primary logo_1.png') }}">
+</head>
+<body>
+    <div class="background-mesh">
+        <div class="mesh-blob blob-1"></div>
+        <div class="mesh-blob blob-2"></div>
+        <div class="mesh-blob blob-3"></div>
+    </div>
+
+    <main class="container">
+        <header>
+            <div class="header-left">
+                <img src="{{ url_for('static', filename='By Probus_Primary logo_1.png') }}" alt="Prolt Energy Logo" class="logo" onerror="this.style.display='none'">
+                <div class="header-content">
+                    <h1>Market Prediction</h1>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="date-picker-wrapper">
+                    <input type="text" id="date-range-picker" placeholder="Select Date Range" readonly>
+                    <button id="fetch-btn" class="btn-primary">Submit</button>
+                </div>
+            </div>
+        </header>
+
+        <div id="loading-spinner" class="spinner-container">
+            <div class="spinner"></div>
+        </div>
+        
+        <div id="error-message" class="error-container hidden">
+            <h2>Error</h2>
+            <p id="error-text">Failed to fetch predictions.</p>
+        </div>
+
+        <div id="pagination-controls" class="pagination-container hidden">
+            <button id="prev-page-btn" class="btn-secondary" disabled>← Previous Day</button>
+            <span id="current-page-label" class="page-label">Date</span>
+            <button id="next-page-btn" class="btn-secondary">Next Day →</button>
+        </div>
+
+        <div id="predictions-grid" class="matrix-wrapper hidden">
+            <!-- Cards will be dynamically injected here via JS -->
+        </div>
+    </main>
+
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="{{ url_for('static', filename='app.js', v=2) }}"></script>
+</body>
+</html>
+

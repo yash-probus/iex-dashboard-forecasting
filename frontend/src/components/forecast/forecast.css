@@ -1,0 +1,354 @@
+/* GDAM / Price Forecast Design System styles */
+:root {
+  --forecast: #7C3AED;
+  --actual: #14B8A6;
+  --dam: #2563EB;
+  --gdam: #14B8A6;
+  --rtm: #F59E0B;
+  --positive: #10B981;
+  --negative: #F43F5E;
+  --brand: #7C3AED;
+  --brand-2: #6366F1;
+  --brand-hover: #6D28D9;
+  --card: #FFFFFF;
+  --surface-2: #F1F5F9;
+  --glass: rgba(255, 255, 255, 0.72);
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --accent: rgba(124, 58, 237, 0.08);
+  --accent-foreground: #6D28D9;
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --peak: rgba(244, 63, 94, 0.06);
+  --grid: rgba(100, 116, 139, 0.18);
+
+  --gradient-brand: linear-gradient(135deg, #7C3AED 0%, #6366F1 100%);
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.08);
+  --shadow-float: 0 12px 40px -12px rgba(15, 23, 42, 0.25);
+  --shadow-bar: 0 6px 16px -10px rgba(15, 23, 42, 0.18);
+  --shadow-brand: 0 6px 20px -8px rgba(124, 58, 237, 0.55);
+}
+
+.dark,
+html.dark {
+  --card: #0B0F19;
+  --surface-2: #161F30;
+  --glass: rgba(11, 15, 25, 0.72);
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
+  --muted: #161F30;
+  --muted-foreground: #94A3B8;
+  --accent: rgba(124, 58, 237, 0.14);
+  --accent-foreground: #C4B5FD;
+  --grid: rgba(255, 255, 255, 0.07);
+  --peak: rgba(244, 63, 94, 0.08);
+  --shadow-bar: 0 6px 16px -10px rgba(0, 0, 0, 0.6);
+  --shadow-float: 0 12px 40px -12px rgba(0, 0, 0, 0.7);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+}
+
+.forecast-scope .num,
+.num {
+  font-family: var(--font-mono, "JetBrains Mono", ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.forecast-scope .label-caps,
+.label-caps {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-foreground);
+}
+
+.forecast-scope .surface,
+.surface {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-card);
+}
+
+.forecast-scope .glass,
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+}
+
+.forecast-scope .bg-brand-gradient,
+.bg-brand-gradient {
+  background-image: var(--gradient-brand);
+}
+
+.forecast-scope .shadow-brand,
+.shadow-brand {
+  box-shadow: var(--shadow-brand);
+}
+
+.forecast-scope .shadow-bar,
+.shadow-bar {
+  box-shadow: var(--shadow-bar);
+}
+
+.forecast-scope .shadow-float,
+.shadow-float {
+  box-shadow: var(--shadow-float);
+}
+
+.forecast-scope .lift,
+.lift {
+  transition: transform 250ms ease-out, border-color 250ms ease-out, box-shadow 250ms ease-out;
+}
+
+.forecast-scope .lift:hover,
+.lift:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124, 58, 237, 0.3);
+}
+
+.forecast-scope .fade-up,
+.fade-up {
+  animation: forecast-fade-up 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes forecast-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* React DayPicker styling for Calendar Popover */
+.rdp-root {
+  --rdp-accent-color: var(--brand, #7C3AED) !important;
+  --rdp-accent-background-color: rgba(124, 58, 237, 0.12) !important;
+  --rdp-day-height: 2rem !important;
+  --rdp-day-width: 2rem !important;
+  font-family: inherit !important;
+  width: 280px !important;
+  max-width: 100% !important;
+  position: relative !important;
+}
+
+.rdp-months {
+  position: relative !important;
+  width: 100% !important;
+}
+
+.rdp-month {
+  position: relative !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
+}
+
+.rdp-month_caption {
+  position: relative !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  height: 2rem !important;
+  width: 100% !important;
+}
+
+.rdp-caption_label {
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  color: var(--foreground, #0F172A) !important;
+}
+
+.rdp-nav {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  height: 2rem !important;
+  width: 100% !important;
+  pointer-events: none !important;
+  z-index: 10 !important;
+}
+
+.rdp-button_previous,
+.rdp-button_next,
+.rdp-nav_button_previous,
+.rdp-nav_button_next {
+  pointer-events: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  border-radius: 0.375rem !important;
+  cursor: pointer !important;
+  color: var(--muted-foreground, #64748B) !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.rdp-button_previous:hover,
+.rdp-button_next:hover,
+.rdp-nav_button_previous:hover,
+.rdp-nav_button_next:hover {
+  background: var(--surface-2, #F1F5F9) !important;
+  color: var(--foreground, #0F172A) !important;
+}
+
+.rdp-month_grid,
+.rdp-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  table-layout: fixed !important;
+}
+
+.rdp-weekdays {
+  width: 100% !important;
+}
+
+.rdp-weekday {
+  width: 14.2857% !important;
+  height: 2rem !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  color: var(--muted-foreground, #64748B) !important;
+  padding: 0 !important;
+}
+
+.rdp-weeks {
+  width: 100% !important;
+}
+
+.rdp-week {
+  width: 100% !important;
+}
+
+.rdp-day {
+  width: 14.2857% !important;
+  height: 2.125rem !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding: 1px !important;
+}
+
+.rdp-day_button,
+.rdp-day button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 2rem !important;
+  height: 2rem !important;
+  border-radius: 0.375rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--foreground, #0F172A) !important;
+  transition: all 0.15s ease !important;
+  margin: 0 auto !important;
+}
+
+.rdp-day_button:hover,
+.rdp-day button:hover {
+  background-color: var(--surface-2, #F1F5F9) !important;
+}
+
+.rdp-selected .rdp-day_button,
+.rdp-day_button[data-selected="true"],
+.rdp-day[data-selected="true"] button,
+.rdp-day_button[data-selected-single="true"] {
+  background-color: var(--brand, #7C3AED) !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+}
+
+.rdp-today .rdp-day_button,
+.rdp-day_button[data-today="true"] {
+  background-color: var(--surface-2, #F1F5F9) !important;
+  font-weight: 600 !important;
+  color: var(--brand, #7C3AED) !important;
+}
+
+.rdp-outside {
+  opacity: 0.35 !important;
+}
+
+.rdp-hidden {
+  visibility: hidden !important;
+}
+
+/* ==========================================================================
+   Animated KPI Sparklines (Floating wave undulation + flowing energy beam)
+   ========================================================================== */
+.sparkline-wrapper {
+  opacity: 0.72;
+  transform-origin: bottom center;
+  animation: sparklineFloat 4.2s ease-in-out infinite;
+  will-change: transform, opacity;
+  transition: opacity 300ms ease;
+}
+
+.surface:hover .sparkline-wrapper {
+  opacity: 1;
+}
+
+@keyframes sparklineFloat {
+
+  0%,
+  100% {
+    transform: translateY(0px) scaleY(1);
+    opacity: 0.72;
+  }
+
+  50% {
+    transform: translateY(-2.5px) scaleY(1.09);
+    opacity: 0.92;
+  }
+}
+
+/* Continuous light beam moving along the curve */
+.sparkline-stream .recharts-area-line {
+  stroke-dasharray: 75 165;
+  stroke-linecap: round;
+  animation: sparklineFlow 2.8s linear infinite;
+  animation-delay: inherit;
+  filter: drop-shadow(0 0 3.5px currentColor);
+}
+
+.surface:hover .sparkline-stream .recharts-area-line {
+  filter: drop-shadow(0 0 5.5px currentColor);
+}
+
+@keyframes sparklineFlow {
+  0% {
+    stroke-dashoffset: 240;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Glowing Dot passing through the sparkline curve */
+.sparkline-glowing-dot {
+  filter: drop-shadow(0 0 4px currentColor) drop-shadow(0 0 9px currentColor);
+  pointer-events: none;
+  transition: filter 250ms ease;
+}
+
+.surface:hover .sparkline-glowing-dot {
+  filter: drop-shadow(0 0 7px currentColor) drop-shadow(0 0 14px currentColor);
+}

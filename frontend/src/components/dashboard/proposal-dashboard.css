@@ -1,0 +1,302 @@
+/* Global Reset & Box Sizing */
+* {
+  /* margin: 0;
+  padding: 0; */
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+body {
+  background-color: #f8fafc;
+  color: #1e293b;
+  padding: 24px;
+}
+
+/* Main Container Layout */
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: #f8fafc;
+  padding: 24px;
+}
+
+/* Generic Card Utility */
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  padding: 24px;
+}
+
+/* ==========================================
+   Top Header Navigation
+   ========================================== */
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pill-toggle {
+  background-color: #f1f5f9;
+  padding: 4px;
+  border-radius: 20px;
+  display: inline-flex;
+}
+
+.pill-toggle button {
+  border: none;
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.pill-toggle button.active {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.date-dropdown {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==========================================
+   Hero / Potential Savings Banner
+   ========================================== */
+.savings-banner {
+  background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%);
+  border: 1px solid #e0e7ff;
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.savings-banner .headline {
+  font-size: 22px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 8px;
+}
+
+.savings-banner .headline .amount {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.savings-banner .headline .badge {
+  color: #4f46e5;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.savings-banner .subhead {
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+/* Spend Comparison Cards Container */
+.spend-comparison {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.spend-box {
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 16px 28px;
+  text-align: center;
+  min-width: 180px;
+}
+
+.spend-box.optimized {
+  background-color: #f0fdf4;
+  border-color: #dcfce7;
+}
+
+.spend-box .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.spend-box.optimized .label {
+  color: #16a34a;
+}
+
+.spend-box .value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.spend-box.optimized .value {
+  color: #16a34a;
+}
+
+.arrow-icon {
+  color: #94a3b8;
+  font-size: 18px;
+}
+
+.analyzed-units {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.analyzed-units strong {
+  color: #0f172a;
+}
+
+/* ==========================================
+   Chart Section Headers
+   ========================================== */
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.chart-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Legend Styling */
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 16px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dot-red { background-color: #f87171; }
+.dot-blue { background-color: #3b82f6; }
+.dot-green { background-color: #86efac; }
+.dot-purple { background-color: #a855f7; }
+
+/* ==========================================
+   Purchase Comparison Switcher
+   ========================================== */
+.purchase-toggle-group {
+  background: #f8fafc;
+  padding: 4px;
+  border-radius: 12px;
+  display: flex;
+  gap: 4px;
+}
+
+.purchase-toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.purchase-toggle-btn.active {
+  background: #111827;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recommended-tag {
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* ==========================================
+   Hover Tooltip Custom Overlay
+   ========================================== */
+.chart-tooltip {
+  background: #1e1e1e;
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  width: 260px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  font-size: 12px;
+}
+
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #334155;
+  color: #f8fafc;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  color: #cbd5e1;
+}
+
+.tooltip-row.highlight {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-bottom: 1px solid #334155;
+  border-top: 1px solid #334155;
+  color: #4ade80;
+  font-weight: 700;
+  font-size: 13px;
+}

@@ -1,0 +1,52 @@
+# ============================
+# Dependencies
+# ============================
+
+node_modules/
+
+# ============================
+# Build Output
+# ============================
+
+dist/
+
+# ============================
+# Environment Files
+# ============================
+
+.env
+.env.local
+.env.production
+
+# Keep template
+!.env.example
+
+# ============================
+# Prisma Generated Files
+# ============================
+
+/src/generated/prisma
+uploads/*
+!uploads/.gitkeep
+!uploads/**/.gitkeep
+
+# ============================
+# Coverage
+# ============================
+
+coverage/
+
+# ============================
+# Logs
+# ============================
+
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ============================
+# TypeScript Cache
+# ============================
+
+*.tsbuildinfo

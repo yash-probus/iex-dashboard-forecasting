@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  iex-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iex-frontend-${ENV_SUFFIX:-dev}
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-8081}:8081"
