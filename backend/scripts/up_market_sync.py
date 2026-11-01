@@ -15,7 +15,11 @@ from dotenv import load_dotenv
 # Configuration
 # ============================================================
 
-load_dotenv()
+env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.env'))
+if os.path.exists(env_path):
+    load_dotenv(env_path)
+else:
+    load_dotenv()
 
 IEX_API_URL = os.getenv("IEX_API_URL", "https://www.iexindia.com/IEXPublish/AppServices.svc/IEXGetTradeData/")
 IEX_API_TOKEN = os.getenv("IEX_API_TOKEN", "NCLIEXHkl7900@8Uyhkj")

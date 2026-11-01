@@ -46,3 +46,4 @@ Comprehensive power forecasting and market intelligence platform for the Indian 
    npm run dev
    ```
    Frontend runs by default on `http://localhost:5175`.
+

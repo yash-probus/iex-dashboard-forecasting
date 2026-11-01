@@ -20,12 +20,8 @@ const options = {
     },
     servers: [
       {
-        url: 'http://13.206.77.155:5002',
-        description: 'Production Server',
-      },
-      {
-        url: 'http://localhost:5000',
-        description: 'Local Development Server',
+        url: process.env.SWAGGER_API_URL || `http://localhost:${process.env.PORT || '5001'}`,
+        description: 'Current Environment Server',
       },
     ],
     components: {

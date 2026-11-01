@@ -46,49 +46,26 @@ def save_forecast_to_db():
         
     print(f"Successfully generated {len(df_forecast)} forecast records.")
     
-    # 4. Save to Database (DEV and PROD)
-    load_dotenv()
-    
-    db_configs = [
-        {
-            "name": "DEV",
-            "host": os.getenv('PGHOST'),
-            "port": os.getenv('PGPORT'),
-            "database": os.getenv('PGDATABASE'),
-            "user": os.getenv('PGUSER'),
-            "password": os.getenv('PGPASSWORD')
-        },
-        {
-            "name": "PROD",
-            "host": os.getenv('PROD_PGHOST'),
-            "port": os.getenv('PROD_PGPORT'),
-            "database": os.getenv('PROD_PGDATABASE'),
-            "user": os.getenv('PROD_PGUSER'),
-            "password": os.getenv('PROD_PGPASSWORD')
-        }
-    ]
-    
+    # 4. Save to Database using centralized get_db_engine (from .env DATABASE_URL)
     schema = 'forecasting'
     table_name = 'market_forecasting'
     
-    for config in db_configs:
-        try:
-            print(f"Saving forecast to {config['name']} Database...")
-            connection_string = f"postgresql+psycopg2://{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['database']}"
-            engine = create_engine(connection_string)
+    try:
+        from data_pipeline import get_db_engine
+        engine = get_db_engine()
+        
+        # Ensure schema exists
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema}"))
+            if hasattr(conn, 'commit'):
+                conn.commit()
             
-            # Ensure schema exists
-            from sqlalchemy import text
-            with engine.connect() as conn:
-                conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema}"))
-                if hasattr(conn, 'commit'):
-                    conn.commit()
-                
-            # Overwrite table with new forecast
-            df_forecast.to_sql(table_name, engine, schema=schema, if_exists='replace', index=False)
-            print(f"Successfully saved to {config['name']} database in {schema}.{table_name}!")
-        except Exception as e:
-            print(f"Failed to save to {config['name']} database: {e}")
+        # Overwrite table with new forecast
+        df_forecast.to_sql(table_name, engine, schema=schema, if_exists='replace', index=False)
+        print(f"Successfully saved forecast to database in {schema}.{table_name}!")
+    except Exception as e:
+        print(f"Failed to save to database: {e}")
 
 if __name__ == "__main__":
     save_forecast_to_db()

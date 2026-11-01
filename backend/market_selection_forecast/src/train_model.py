@@ -210,18 +210,11 @@ def train_and_evaluate(df: pd.DataFrame):
 
 if __name__ == "__main__":
     import os
-    from dotenv import load_dotenv
-    from sqlalchemy import create_engine
+    import sys
+    sys.path.append(os.path.dirname(__file__))
+    from data_pipeline import get_db_engine
     
-    load_dotenv()
-    host = os.getenv('PGHOST')
-    port = os.getenv('PGPORT')
-    database = os.getenv('PGDATABASE')
-    user = os.getenv('PGUSER')
-    password = os.getenv('PGPASSWORD')
-    
-    connection_string = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}"
-    engine = create_engine(connection_string)
+    engine = get_db_engine()
     
     print("Fetching processed features from database...")
     processed_df = pd.read_sql("SELECT * FROM forecasting.market_analysis", engine)

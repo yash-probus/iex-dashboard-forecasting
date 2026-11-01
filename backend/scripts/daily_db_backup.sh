@@ -1,9 +1,20 @@
 #!/bin/bash
 
+# Load environment variables from .env if present
+ENV_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/.env"
+if [ -f "$ENV_FILE" ]; then
+  # Export DATABASE_URL and BACKUP_DIR if defined
+  export $(grep -E '^(DATABASE_URL|BACKUP_DIR)=' "$ENV_FILE" | xargs)
+fi
+
 # Define variables
-BACKUP_DIR="/mnt/storage/iex_db_backups"
-# Use the main DB connection string
-DB_URL="postgresql://postgres:iex_sec_k9P2mX_2026@13.206.77.155:5432/Prolt_Operations"
+BACKUP_DIR="${BACKUP_DIR:-/mnt/storage/iex_db_backups}"
+DB_URL="${DATABASE_URL}"
+
+if [ -z "$DB_URL" ]; then
+  echo "Error: DATABASE_URL is not set!"
+  exit 1
+fi
 DATE=$(date +"%Y-%m-%d_%H-%M-%S")
 BACKUP_FILE="$BACKUP_DIR/prolt_operations_$DATE.sql.gz"
 
