@@ -58,7 +58,7 @@ export const MultiMarketPaisaCard: React.FC<MultiMarketPaisaCardProps> = ({
   // Per-Market Independent Date state (as drawn in user diagram):
   // DAM: Target Date (Same Day)
   // RTM: Yesterday (D-1) by default or Target Date
-  // RTM(NC): Target Date (Same Day)
+  // RTM(NC): Yesterday (D-1) by default or Target Date
   // GDAM: Target Date (Same Day)
   const [marketDates, setMarketDates] = useState<Record<MarketKey, string>>(() => {
     const target = selectedDate || format(new Date(), "yyyy-MM-dd");
@@ -71,7 +71,7 @@ export const MultiMarketPaisaCard: React.FC<MultiMarketPaisaCardProps> = ({
     return {
       DAM: target,
       RTM_DAYAHEAD: yday,
-      RTM_NOWCAST: target,
+      RTM_NOWCAST: yday,
       GDAM: target,
     };
   });
@@ -108,7 +108,7 @@ export const MultiMarketPaisaCard: React.FC<MultiMarketPaisaCardProps> = ({
         ...prev,
         DAM: selectedDate,
         RTM_DAYAHEAD: prev.RTM_DAYAHEAD === yday ? yday : yday, // default to yesterday
-        RTM_NOWCAST: selectedDate,
+        RTM_NOWCAST: prev.RTM_NOWCAST === yday ? yday : yday, // default to yesterday
         GDAM: selectedDate,
       }));
     }
@@ -233,17 +233,18 @@ export const MultiMarketPaisaCard: React.FC<MultiMarketPaisaCardProps> = ({
     toast.success(`Synced all 4 markets to ${target}`);
   };
 
-  const handleToggleRtmYesterday = () => {
+  const handleToggleRtmYesterday = (marketKey: "RTM_DAYAHEAD" | "RTM_NOWCAST" = "RTM_DAYAHEAD") => {
     const target = selectedDate || format(new Date(), "yyyy-MM-dd");
     let yday = target;
     try {
       yday = format(subDays(parseISO(target), 1), "yyyy-MM-dd");
     } catch {}
 
-    const isCurrentlyYday = marketDates.RTM_DAYAHEAD === yday;
+    const isCurrentlyYday = marketDates[marketKey] === yday;
     const nextDate = isCurrentlyYday ? target : yday;
-    handleMarketDateChange("RTM_DAYAHEAD", nextDate);
-    toast.info(`RTM Day-Ahead switched to ${isCurrentlyYday ? "Target Day (D)" : "Yesterday (D-1)"}: ${nextDate}`);
+    handleMarketDateChange(marketKey, nextDate);
+    const label = marketKey === "RTM_NOWCAST" ? "RTM Nowcast" : "RTM Day-Ahead";
+    toast.info(`${label} switched to ${isCurrentlyYday ? "Target Day (D)" : "Yesterday (D-1)"}: ${nextDate}`);
   };
 
   // Copy Summary text to Clipboard
@@ -430,7 +431,7 @@ export const MultiMarketPaisaCard: React.FC<MultiMarketPaisaCardProps> = ({
         {MARKET_KEYS.map((key) => {
           const meta = MARKETS_CONFIG[key];
           const a = analyses[key];
-          const isRtmDa = key === "RTM_DAYAHEAD";
+          const isRtm = key === "RTM_DAYAHEAD" || key === "RTM_NOWCAST";
           const isTargetDate = a.date === selectedDate;
 
           return (
@@ -485,9 +486,9 @@ export const MultiMarketPaisaCard: React.FC<MultiMarketPaisaCardProps> = ({
                     onChange={(e) => handleMarketDateChange(key, e.target.value)}
                     className="h-7 rounded-md border border-border/80 bg-background px-2 font-mono text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                   />
-                  {isRtmDa && (
+                  {isRtm && (
                     <button
-                      onClick={handleToggleRtmYesterday}
+                      onClick={() => handleToggleRtmYesterday(key as "RTM_DAYAHEAD" | "RTM_NOWCAST")}
                       title="Toggle between Yesterday (D-1) and Target Day (D)"
                       className="px-1.5 py-1 text-[10px] font-bold rounded border border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 cursor-pointer transition-colors"
                     >
