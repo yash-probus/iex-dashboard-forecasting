@@ -20,44 +20,46 @@ const transporter = nodemailer.createTransport({
 const SUPERADMIN_EMAIL = 'super.admin@probus.io';
 const BOT_EMAIL = 'prolttestbot@probus.io';
 
-const DEFAULT_FIXED_OTP = '749261';
+// Map specific accounts to their exact allowed fixed OTPs
+export const getAccountFixedOtps = (email: string): string[] | null => {
+  const normalized = email.trim().toLowerCase();
 
-// List of allowed emails with fixed OTP (case-insensitive)
-export const getFixedOtpEmails = (): string[] => {
-  const envEmails = process.env.FIXED_OTP_EMAILS 
-    ? process.env.FIXED_OTP_EMAILS.split(',').map(e => e.trim().toLowerCase()) 
-    : [];
-  return Array.from(new Set([SUPERADMIN_EMAIL.toLowerCase(), BOT_EMAIL.toLowerCase(), ...envEmails]));
+  // For prolttestbot@probus.io, only 463176 is allowed
+  if (normalized === BOT_EMAIL) {
+    const botOtp = (process.env.BOT_FIXED_OTP || '463176').trim();
+    return [botOtp];
+  }
+
+  // For superadmin, standard admin OTP
+  if (normalized === SUPERADMIN_EMAIL) {
+    const adminOtp = (process.env.SUPERADMIN_FIXED_OTP || '749261').trim();
+    return [adminOtp];
+  }
+
+  // Any other custom fixed OTP emails specified via env var
+  if (process.env.FIXED_OTP_EMAILS) {
+    const extraEmails = process.env.FIXED_OTP_EMAILS.split(',').map(e => e.trim().toLowerCase());
+    if (extraEmails.includes(normalized)) {
+      return [(process.env.FIXED_OTP_CODE || '749261').trim()];
+    }
+  }
+
+  return null;
 };
 
 // Check if email has fixed OTP bypass
 export const isFixedOtpEmail = (email: string): boolean => {
   if (!email) return false;
-  const normalized = email.trim().toLowerCase();
-  return getFixedOtpEmails().includes(normalized);
-};
-
-// Get valid fixed OTPs
-export const getValidFixedOtps = (): string[] => {
-  const otps = [DEFAULT_FIXED_OTP, '123456'];
-  if (process.env.FIXED_OTP_CODE) {
-    otps.push(process.env.FIXED_OTP_CODE.trim());
-  }
-  if (process.env.BOT_FIXED_OTP) {
-    otps.push(process.env.BOT_FIXED_OTP.trim());
-  }
-  if (process.env.SUPERADMIN_FIXED_OTP) {
-    otps.push(process.env.SUPERADMIN_FIXED_OTP.trim());
-  }
-  return Array.from(new Set(otps));
+  return getAccountFixedOtps(email) !== null;
 };
 
 export const generateAndSendOTP = async (email: string): Promise<void> => {
   const normalizedEmail = email.trim().toLowerCase();
 
   // If it's a fixed OTP user (e.g. superadmin or bot), skip generating/sending email
-  if (isFixedOtpEmail(normalizedEmail)) {
-    console.log(`[AUTH] Fixed OTP login requested for ${normalizedEmail}. Email delivery skipped. Allowed OTPs: ${getValidFixedOtps().join(', ')}`);
+  const fixedOtps = getAccountFixedOtps(normalizedEmail);
+  if (fixedOtps) {
+    console.log(`[AUTH] Fixed OTP login requested for ${normalizedEmail}. Email delivery skipped. Allowed OTP: ${fixedOtps.join(', ')}`);
     return;
   }
 
@@ -128,8 +130,9 @@ export const verifyOTP = (email: string, enteredOtp: string): boolean => {
   const cleanOtp = enteredOtp.trim();
 
   // Fixed OTP bypass check (e.g. superadmin, bot)
-  if (isFixedOtpEmail(normalizedEmail)) {
-    return getValidFixedOtps().includes(cleanOtp);
+  const fixedOtps = getAccountFixedOtps(normalizedEmail);
+  if (fixedOtps) {
+    return fixedOtps.includes(cleanOtp);
   }
 
   const stored = otpStore.get(normalizedEmail);
