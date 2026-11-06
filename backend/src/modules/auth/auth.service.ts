@@ -49,26 +49,39 @@ export const loginUser = async (dto: LoginDTO): Promise<AuthResponse> => {
 import { generateAndSendOTP, verifyOTP } from './otp.service';
 
 export const sendOtpForUser = async (email: string): Promise<void> => {
-  // Check if user exists
-  const user = await prisma.user.findUnique({
-    where: { email },
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // Check if user exists (case-insensitive)
+  const user = await prisma.user.findFirst({
+    where: {
+      email: {
+        equals: normalizedEmail,
+        mode: 'insensitive',
+      },
+    },
   });
 
   if (!user) {
     throw new AppError('User with this email not found', 404);
   }
 
-  await generateAndSendOTP(email);
+  await generateAndSendOTP(user.email);
 };
 
 export const loginWithOtp = async (email: string, otp: string): Promise<AuthResponse> => {
-  const isValid = verifyOTP(email, otp);
+  const normalizedEmail = email.trim().toLowerCase();
+  const isValid = verifyOTP(normalizedEmail, otp);
   if (!isValid) {
     throw new AppError('Invalid or expired OTP', 401);
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email },
+  const user = await prisma.user.findFirst({
+    where: {
+      email: {
+        equals: normalizedEmail,
+        mode: 'insensitive',
+      },
+    },
   });
 
   if (!user) {

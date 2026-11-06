@@ -18,12 +18,46 @@ const transporter = nodemailer.createTransport({
 });
 
 const SUPERADMIN_EMAIL = 'super.admin@probus.io';
-const SUPERADMIN_FIXED_OTP = '749261';
+const BOT_EMAIL = 'prolttestbot@probus.io';
+
+const DEFAULT_FIXED_OTP = '749261';
+
+// List of allowed emails with fixed OTP (case-insensitive)
+export const getFixedOtpEmails = (): string[] => {
+  const envEmails = process.env.FIXED_OTP_EMAILS 
+    ? process.env.FIXED_OTP_EMAILS.split(',').map(e => e.trim().toLowerCase()) 
+    : [];
+  return Array.from(new Set([SUPERADMIN_EMAIL.toLowerCase(), BOT_EMAIL.toLowerCase(), ...envEmails]));
+};
+
+// Check if email has fixed OTP bypass
+export const isFixedOtpEmail = (email: string): boolean => {
+  if (!email) return false;
+  const normalized = email.trim().toLowerCase();
+  return getFixedOtpEmails().includes(normalized);
+};
+
+// Get valid fixed OTPs
+export const getValidFixedOtps = (): string[] => {
+  const otps = [DEFAULT_FIXED_OTP, '123456'];
+  if (process.env.FIXED_OTP_CODE) {
+    otps.push(process.env.FIXED_OTP_CODE.trim());
+  }
+  if (process.env.BOT_FIXED_OTP) {
+    otps.push(process.env.BOT_FIXED_OTP.trim());
+  }
+  if (process.env.SUPERADMIN_FIXED_OTP) {
+    otps.push(process.env.SUPERADMIN_FIXED_OTP.trim());
+  }
+  return Array.from(new Set(otps));
+};
 
 export const generateAndSendOTP = async (email: string): Promise<void> => {
-  // If it's the superadmin, we don't need to generate a new one or send an email.
-  if (email === SUPERADMIN_EMAIL) {
-    console.log(`[DEV MODE] Superadmin login requested. Use fixed OTP.`);
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // If it's a fixed OTP user (e.g. superadmin or bot), skip generating/sending email
+  if (isFixedOtpEmail(normalizedEmail)) {
+    console.log(`[AUTH] Fixed OTP login requested for ${normalizedEmail}. Email delivery skipped. Allowed OTPs: ${getValidFixedOtps().join(', ')}`);
     return;
   }
 
@@ -37,7 +71,7 @@ export const generateAndSendOTP = async (email: string): Promise<void> => {
 
   // Store OTP with a 5-minute expiration
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-  otpStore.set(email, { otp, expiresAt });
+  otpStore.set(normalizedEmail, { otp, expiresAt });
 
   // For development without SMTP setup, just log it.
   if (!process.env.SMTP_USER) {
@@ -89,26 +123,30 @@ export const generateAndSendOTP = async (email: string): Promise<void> => {
 };
 
 export const verifyOTP = (email: string, enteredOtp: string): boolean => {
-  // Superadmin bypass
-  if (email === SUPERADMIN_EMAIL) {
-    return enteredOtp === SUPERADMIN_FIXED_OTP;
+  if (!email || !enteredOtp) return false;
+  const normalizedEmail = email.trim().toLowerCase();
+  const cleanOtp = enteredOtp.trim();
+
+  // Fixed OTP bypass check (e.g. superadmin, bot)
+  if (isFixedOtpEmail(normalizedEmail)) {
+    return getValidFixedOtps().includes(cleanOtp);
   }
 
-  const stored = otpStore.get(email);
+  const stored = otpStore.get(normalizedEmail);
   if (!stored) {
     return false;
   }
 
   // Check if expired
   if (stored.expiresAt < new Date()) {
-    otpStore.delete(email); // Clean up expired OTP
+    otpStore.delete(normalizedEmail); // Clean up expired OTP
     return false;
   }
 
   // Verify
-  if (stored.otp === enteredOtp) {
+  if (stored.otp === cleanOtp) {
     // Clear OTP after successful use
-    otpStore.delete(email);
+    otpStore.delete(normalizedEmail);
     return true;
   }
 
