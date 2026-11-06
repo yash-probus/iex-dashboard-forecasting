@@ -7,6 +7,13 @@ import { authMiddleware } from '../../middleware/auth.middleware';
 
 const router = Router();
 
+const EXEMPT_IDENTIFIERS = new Set([
+  'prolttestbot@probus.io',
+  'prolt_forecasting_bot',
+  'super.admin@probus.io',
+  'superadmin',
+]);
+
 // Strict rate limiter for login to prevent brute force
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -15,8 +22,14 @@ const loginLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skip: (req) => {
-    const email = (req.body?.email || req.body?.username || '').trim().toLowerCase();
-    return email === 'prolttestbot@probus.io' || email === 'super.admin@probus.io';
+    const identifier = (req.body?.email || req.body?.username || '').trim().toLowerCase();
+    if (EXEMPT_IDENTIFIERS.has(identifier)) return true;
+
+    // Skip rate limiting for local automated scripts calling localhost directly
+    const ip = req.ip || req.socket.remoteAddress || '';
+    if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') return true;
+
+    return false;
   },
 });
 
