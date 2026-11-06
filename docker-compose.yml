@@ -18,3 +18,63 @@ services:
       retries: 5
     networks:
       - iex-network
+
+  iex-redis:
+    image: redis:7-alpine
+    container_name: iex-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - iex-network
+
+  iex-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: iex-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-5001}:5001"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5001/health', (res) => { if (res.statusCode === 200) process.exit(0); else process.exit(1); }).on('error', () => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      iex-postgres:
+        condition: service_healthy
+      iex-redis:
+        condition: service_started
+    env_file:
+      - ./backend/.env
+    environment:
+      - TZ=Asia/Kolkata
+    volumes:
+      - ./backend/uploads:/app/uploads
+    networks:
+      - iex-network
+
+  iex-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: iex-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-8081}:8081"
+    depends_on:
+      - iex-backend
+    networks:
+      - iex-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  iex-network:
+    driver: bridge
