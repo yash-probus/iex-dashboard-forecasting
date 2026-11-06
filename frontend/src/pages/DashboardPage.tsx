@@ -651,7 +651,7 @@ export default function DashboardPage() {
 
   // Auto-discover any new modules exposed by the backend
   useEffect(() => {
-    const baseUrl = (import.meta as any).env?.VITE_API_BASE_URL || 'http://13.206.77.155:5002/api';
+    const baseUrl = (import.meta as any).env?.VITE_API_BASE_URL || `${window.location.protocol}//${window.location.hostname}:5001/api`;
     fetch(`${baseUrl}/modules`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
