@@ -55,6 +55,7 @@ services:
       - TZ=Asia/Kolkata
     volumes:
       - ./backend/uploads:/app/uploads
+      - ./backend/scripts:/app/scripts
     networks:
       - iex-network
 

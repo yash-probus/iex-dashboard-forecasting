@@ -1,4 +1,5 @@
 import os
+import uuid
 import logging
 from datetime import datetime, date, time
 from decimal import Decimal
@@ -408,7 +409,208 @@ def process_market_month(
         table_name
     )
 
+    # Persist All-India Dataset & Interval Records (for /dam, /gdam, /rtm dashboard)
+    market_map = {
+        DAM_PRODUCT_CODE: "DAM",
+        GDAM_PRODUCT_CODE: "GDAM",
+        RTM_PRODUCT_CODE: "RTM",
+    }
+    market_name = market_map.get(product_code)
+    if market_name:
+        try:
+            persist_all_india_dataset(connection, response, market_name)
+        except Exception:
+            logger.exception("Failed to persist All-India Dataset for %s", market_name)
+
     return len(rows)
+
+
+# ============================================================
+# All-India Dataset & Interval Records Persistence
+# ============================================================
+
+def persist_all_india_dataset(connection, api_response, market_name):
+    """
+    Extract All_India_DAM_GDAM_RTM from api_response and upsert into
+    public."Dataset" and public."DamRecord" / "GdamNewRecord" / "RtmRecord".
+    """
+    delivery_dates = api_response.get("Delivery_Date_Details", [])
+    if not delivery_dates:
+        return 0
+
+    total_records_inserted = 0
+
+    with connection.cursor() as cursor:
+        for delivery in delivery_dates:
+            delivery_date_str = delivery.get("DeliveryDate")
+            if not delivery_date_str:
+                continue
+
+            delivery_date = datetime.strptime(delivery_date_str, "%d/%m/%Y").date()
+            formatted_date_str = delivery_date.strftime("%Y-%m-%d")
+
+            tokens = delivery.get("Token_Wise") or []
+            if not tokens:
+                continue
+
+            # Check if active dataset already exists
+            cursor.execute(
+                """
+                SELECT id FROM "Dataset"
+                WHERE market = %s::"MarketType" AND "deliveryDate" = %s AND status = 'ACTIVE'::"DatasetStatus"
+                LIMIT 1;
+                """,
+                (market_name, delivery_date)
+            )
+            row = cursor.fetchone()
+            if row:
+                dataset_id = row[0]
+                cursor.execute(
+                    """
+                    UPDATE "Dataset"
+                    SET "updatedAt" = CURRENT_TIMESTAMP
+                    WHERE id = %s;
+                    """,
+                    (dataset_id,)
+                )
+            else:
+                dataset_id = str(uuid.uuid4())
+                file_name = f"iex_api_{market_name.lower()}_{formatted_date_str}.csv"
+                cursor.execute(
+                    """
+                    INSERT INTO "Dataset" (id, market, "deliveryDate", "fileName", status, "uploadedAt", "createdAt", "updatedAt")
+                    VALUES (%s, %s::"MarketType", %s, %s, 'ACTIVE'::"DatasetStatus", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+                    """,
+                    (dataset_id, market_name, delivery_date, file_name)
+                )
+
+            # Persist market-specific interval records
+            if market_name == "DAM":
+                cursor.execute('DELETE FROM "DamRecord" WHERE "datasetId" = %s;', (dataset_id,))
+
+                dam_rows = []
+                for token_data in tokens:
+                    token_no = token_data.get("Token_NO")
+                    if token_no is None:
+                        continue
+                    total_minutes = (token_no - 1) * 15
+                    interval_time = f"{total_minutes // 60:02d}:{total_minutes % 60:02d}"
+                    summary = token_data.get("All_India_DAM_GDAM_RTM") or {}
+
+                    pb = Decimal(str(summary.get("Buy_Volume") or 0))
+                    sb = Decimal(str(summary.get("Sell_Volume") or 0))
+                    mcv = Decimal(str(summary.get("Cleared_Volume") or 0))
+                    fsv = Decimal(str(summary.get("Cleared_Volume") or 0))
+                    mcp = Decimal(str(summary.get("Clearing_Price") or 0))
+
+                    rec_id = str(uuid.uuid4())
+                    dam_rows.append((
+                        rec_id, dataset_id, token_no, interval_time,
+                        pb, sb, mcv, fsv, mcp, formatted_date_str
+                    ))
+
+                if dam_rows:
+                    execute_values(
+                        cursor,
+                        """
+                        INSERT INTO "DamRecord" (
+                            id, "datasetId", "intervalNumber", "intervalTime",
+                            "purchaseBid", "sellBid", mcv, fsv, mcp, date
+                        )
+                        VALUES %s;
+                        """,
+                        dam_rows,
+                        page_size=500
+                    )
+                    total_records_inserted += len(dam_rows)
+
+            elif market_name == "GDAM":
+                cursor.execute('DELETE FROM "GdamNewRecord" WHERE "datasetId" = %s;', (dataset_id,))
+
+                gdam_rows = []
+                for token_data in tokens:
+                    token_no = token_data.get("Token_NO")
+                    if token_no is None:
+                        continue
+                    total_minutes = (token_no - 1) * 15
+                    interval_time = f"{total_minutes // 60:02d}:{total_minutes % 60:02d}"
+                    summary = token_data.get("All_India_DAM_GDAM_RTM") or {}
+
+                    pb = Decimal(str(summary.get("Buy_Volume") or 0))
+                    sb = Decimal(str(summary.get("Sell_Volume") or 0))
+                    mcv = Decimal(str(summary.get("Cleared_Volume") or 0))
+                    fsv = Decimal(str(summary.get("Cleared_Volume") or 0))
+                    mcp = Decimal(str(summary.get("Clearing_Price") or 0))
+
+                    rec_id = str(uuid.uuid4())
+                    gdam_rows.append((
+                        rec_id, dataset_id, formatted_date_str, token_no, interval_time,
+                        pb, sb, Decimal(0), Decimal(0), Decimal(0), Decimal(0),
+                        mcv, Decimal(0), Decimal(0), Decimal(0), Decimal(0),
+                        fsv, Decimal(0), Decimal(0), Decimal(0), Decimal(0), mcp
+                    ))
+
+                if gdam_rows:
+                    execute_values(
+                        cursor,
+                        """
+                        INSERT INTO "GdamNewRecord" (
+                            id, "datasetId", date, "intervalNumber", "intervalTime",
+                            "purchaseBid", "sellBidTotal", "sellBidHydro", "sellBidWind", "sellBidOtherRE", "sellBidDRE",
+                            "mcvTotal", "mcvHydro", "mcvWind", "mcvOtherRE", "mcvDRE",
+                            "fsvTotal", "fsvHydro", "fsvWind", "fsvOtherRE", "fsvDRE", mcp
+                        )
+                        VALUES %s;
+                        """,
+                        gdam_rows,
+                        page_size=500
+                    )
+                    total_records_inserted += len(gdam_rows)
+
+            elif market_name == "RTM":
+                cursor.execute('DELETE FROM "RtmRecord" WHERE "datasetId" = %s;', (dataset_id,))
+
+                rtm_rows = []
+                for token_data in tokens:
+                    token_no = token_data.get("Token_NO")
+                    if token_no is None:
+                        continue
+                    total_minutes = (token_no - 1) * 15
+                    interval_time = f"{total_minutes // 60:02d}:{total_minutes % 60:02d}"
+                    summary = token_data.get("All_India_DAM_GDAM_RTM") or {}
+
+                    pb = Decimal(str(summary.get("Buy_Volume") or 0))
+                    sb = Decimal(str(summary.get("Sell_Volume") or 0))
+                    mcv = Decimal(str(summary.get("Cleared_Volume") or 0))
+                    fsv = Decimal(str(summary.get("Cleared_Volume") or 0))
+                    mcp = Decimal(str(summary.get("Clearing_Price") or 0))
+
+                    session_num = ((token_no - 1) // 2) + 1
+                    session_id = f"RTM_{session_num}"
+                    rec_id = str(uuid.uuid4())
+                    rtm_rows.append((
+                        rec_id, dataset_id, token_no, interval_time, session_id,
+                        pb, sb, mcv, fsv, mcp, formatted_date_str
+                    ))
+
+                if rtm_rows:
+                    execute_values(
+                        cursor,
+                        """
+                        INSERT INTO "RtmRecord" (
+                            id, "datasetId", "intervalNumber", "intervalTime", "sessionId",
+                            "purchaseBid", "sellBid", mcv, fsv, mcp, date
+                        )
+                        VALUES %s;
+                        """,
+                        rtm_rows,
+                        page_size=500
+                    )
+                    total_records_inserted += len(rtm_rows)
+
+    connection.commit()
+    logger.info("Persisted All-India Dataset and %d interval records for %s", total_records_inserted, market_name)
+    return total_records_inserted
 
 
 # ============================================================
