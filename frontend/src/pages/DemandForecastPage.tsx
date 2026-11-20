@@ -151,9 +151,10 @@ export default function DemandForecastPage() {
 
     try {
       const modelParam = model === 'Model 1' ? 'Model1' : 'Model2';
+      const meterParam = isConsumer && meterFilter !== 'all' ? `&meterNo=${encodeURIComponent(meterFilter)}` : '';
       const endpoint = isGeneration
         ? `/forecast/generation?startDate=${date}&endDate=${date}&interval=${interval}&model=${modelParam}`
-        : `/forecast/demand?type=${subType}&startDate=${date}&endDate=${date}&interval=${interval}&model=${modelParam}`;
+        : `/forecast/demand?type=${subType}&startDate=${date}&endDate=${date}&interval=${interval}&model=${modelParam}${meterParam}`;
 
       const res = await apiClient.get(endpoint);
       if (res.data && res.data.success) {
@@ -176,7 +177,7 @@ export default function DemandForecastPage() {
     if (date) {
       fetchData();
     }
-  }, [date, model, interval, subType]);
+  }, [date, model, interval, subType, meterFilter]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -217,8 +218,12 @@ export default function DemandForecastPage() {
     if (!isConsumer || meterFilter === 'all' || availableMeters.length === 0) {
       return data;
     }
+    const matched = data.filter((r) => String(r.meterNo) === meterFilter);
+    if (matched.length > 0) {
+      return matched;
+    }
     const targetIdx = parseInt(meterFilter.replace(/\D/g, ''), 10);
-    if (!isNaN(targetIdx) && data.length > 96) {
+    if (!isNaN(targetIdx) && data.length > 96 && targetIdx <= Math.ceil(data.length / 96)) {
       const start = (targetIdx - 1) * 96;
       return data.slice(start, start + 96);
     }
@@ -799,6 +804,7 @@ export default function DemandForecastPage() {
             <thead className="border-b border-border/60 bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="px-4 py-3">Date</th>
+                {isConsumer && <th className="px-4 py-3 font-mono">Meter No</th>}
                 <th className="px-4 py-3">Hour</th>
                 <th className="px-4 py-3">Time Block</th>
                 <th className="px-4 py-3 text-right">Forecasted {isConsumer ? 'Apparent Energy' : 'Demand'}</th>
@@ -809,14 +815,14 @@ export default function DemandForecastPage() {
             <tbody className="divide-y divide-border/40">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={isConsumer ? 7 : 6} className="py-12 text-center text-muted-foreground">
                     <RefreshCw className="mx-auto size-5 animate-spin text-teal-500" />
                     <span className="mt-2 block">Loading slot telemetry...</span>
                   </td>
                 </tr>
               ) : paginatedRows.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={isConsumer ? 7 : 6} className="py-12 text-center text-muted-foreground">
                     No intervals match your filter criteria.
                   </td>
                 </tr>
@@ -829,6 +835,11 @@ export default function DemandForecastPage() {
                   return (
                     <tr key={idx} className="transition hover:bg-muted/30">
                       <td className="px-4 py-2.5 font-medium text-foreground">{row.date}</td>
+                      {isConsumer && (
+                        <td className="px-4 py-2.5 font-mono text-xs font-semibold text-foreground/80">
+                          {row.meterNo || '—'}
+                        </td>
+                      )}
                       <td className="px-4 py-2.5 font-mono text-muted-foreground">{row.hour}</td>
                       <td className="px-4 py-2.5 font-mono font-medium text-foreground">{row.timeBlock}</td>
                       <td className="px-4 py-2.5 text-right font-mono font-semibold text-teal-600 dark:text-teal-400">
