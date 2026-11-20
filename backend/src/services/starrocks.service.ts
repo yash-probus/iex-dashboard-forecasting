@@ -9,11 +9,11 @@ export class StarrocksService {
   private static getPool(): mysql.Pool {
     if (!this.pool) {
       this.pool = mysql.createPool({
-        host: process.env.STARROCKS_HOST || 'prolt-prod-starrocks.probussense.com',
-        port: Number(process.env.STARROCKS_PORT) || 9030,
-        user: process.env.STARROCKS_USER || 'read_only_user',
-        password: process.env.STARROCKS_PASSWORD || 'Probus@123',
-        database: process.env.STARROCKS_DATABASE || 'prolt_hes_db',
+        host: process.env.HES_DB_HOST || process.env.STARROCKS_HOST || 'prolt-prod-starrocks.prolt.energy',
+        port: Number(process.env.HES_DB_PORT || process.env.STARROCKS_PORT) || 9030,
+        user: process.env.HES_DB_USER || process.env.STARROCKS_USER || 'qa_readonly',
+        password: process.env.HES_DB_PASSWORD || process.env.STARROCKS_PASSWORD || 'StrongPassword@123',
+        database: process.env.HES_DB_NAME || process.env.STARROCKS_DATABASE || 'prolt_hes_db',
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,
