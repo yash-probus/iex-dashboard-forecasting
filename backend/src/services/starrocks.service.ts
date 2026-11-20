@@ -2,6 +2,9 @@ import mysql from 'mysql2/promise';
 
 export class StarrocksService {
   private static pool: mysql.Pool | null = null;
+  private static isAvailable: boolean = true;
+  private static lastCheckTime: number = 0;
+  private static readonly CIRCUIT_BREAKER_INTERVAL_MS = 60 * 1000; // retry every 60s
 
   private static getPool(): mysql.Pool {
     if (!this.pool) {
@@ -14,13 +17,17 @@ export class StarrocksService {
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,
-        connectTimeout: 10000
+        connectTimeout: 2000
       });
     }
     return this.pool;
   }
 
   public static async getAvailableMeters(): Promise<string[]> {
+    if (!this.isAvailable && Date.now() - this.lastCheckTime < this.CIRCUIT_BREAKER_INTERVAL_MS) {
+      return [];
+    }
+
     try {
       const pool = this.getPool();
       const [rows]: any = await pool.query(`
@@ -28,12 +35,16 @@ export class StarrocksService {
         FROM prolt_load_data 
         WHERE meter_number IS NOT NULL AND meter_number != ''
       `);
+      this.isAvailable = true;
+      this.lastCheckTime = Date.now();
       if (Array.isArray(rows)) {
         return rows.map((r: any) => r.meter_number);
       }
       return [];
-    } catch (err) {
-      console.error('StarRocks getAvailableMeters error:', err);
+    } catch (err: any) {
+      this.isAvailable = false;
+      this.lastCheckTime = Date.now();
+      console.error('StarRocks getAvailableMeters error (temporarily disabled for 60s):', err.message);
       return [];
     }
   }
@@ -44,6 +55,10 @@ export class StarrocksService {
   public static async getConsumerActualDemandMap(dates: string[], meterNo?: string): Promise<Map<string, number>> {
     const actualMap = new Map<string, number>();
     if (!dates || dates.length === 0) return actualMap;
+
+    if (!this.isAvailable && Date.now() - this.lastCheckTime < this.CIRCUIT_BREAKER_INTERVAL_MS) {
+      return actualMap;
+    }
 
     try {
       const pool = this.getPool();
@@ -78,6 +93,8 @@ export class StarrocksService {
       }
 
       if (Array.isArray(rows)) {
+        this.isAvailable = true;
+        this.lastCheckTime = Date.now();
         rows.forEach((r: any) => {
           const dateStr = r.date_str;
           const timeStr = r.time_str;
@@ -93,7 +110,9 @@ export class StarrocksService {
         });
       }
     } catch (err: any) {
-      console.error('[StarrocksService] Error fetching consumer actual demand:', err.message);
+      this.isAvailable = false;
+      this.lastCheckTime = Date.now();
+      console.warn('[StarrocksService] StarRocks unreachable (temporarily cooling down for 60s):', err.message);
     }
 
     return actualMap;
