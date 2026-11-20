@@ -871,12 +871,6 @@ export class ForecastService {
             } else if (r.actual_energy !== null && r.actual_energy !== undefined) {
               const rawAct = Number(r.actual_energy);
               actualVal = rawAct > 300 ? Number((rawAct * 0.4).toFixed(2)) : rawAct;
-            } else if (r.forecasted_energy !== null && r.forecasted_energy !== undefined) {
-              const fVal = Number(r.forecasted_energy);
-              if (fVal > 0) {
-                const variance = 0.96 + ((((slotNum * 17) % 21) - 10) * 0.006);
-                actualVal = Number((Math.round((fVal * variance) / 0.4) * 0.4).toFixed(2));
-              }
             }
 
             return {
@@ -940,7 +934,6 @@ export class ForecastService {
             const hourNum = Math.floor((slotNum - 1) / 4) + 1;
 
             const dem = r.forecast_demand !== null && r.forecast_demand !== undefined ? Number(r.forecast_demand) : 0;
-            const fallbackAct = dem > 0 ? Number((Math.round((dem * (0.96 + ((((slotNum * 17) % 21) - 10) * 0.006))) / 0.4) * 0.4).toFixed(2)) : null;
 
             return {
               date: dateStr,
@@ -948,7 +941,7 @@ export class ForecastService {
               timeBlock,
               intervalNumber: slotNum,
               demand: dem,
-              actualDemand: fallbackAct,
+              actualDemand: null,
               meterNo: r.meter_id ? String(r.meter_id) : (meterNo || 'X2521837')
             };
           });
